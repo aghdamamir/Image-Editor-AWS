@@ -1,0 +1,335 @@
+{% extends 'processing/base.html' %}
+
+{% block title %}Image Gallery{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Page Title with Animation -->
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h1 class="display-4 fw-bold text-gradient mb-2">Image Gallery</h1>
+                <p class="lead">Browse your image collection and transformations</p>
+            </div>
+            
+            <!-- Gallery Content -->
+            <div class="card shadow-lg mb-5" data-aos="zoom-in" data-aos-delay="200">
+                <div class="card-body p-4">
+                    {% if gallery_items %}
+                        <div class="row g-4">
+                            {% for item in gallery_items %}
+                                <div class="col-sm-6 col-md-4 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'200' }}">
+                                    <div class="gallery-item">
+                                        <div class="gallery-image-container">
+                                            <img src="{{ item.processed_url }}" alt="Processed image" class="img-fluid gallery-image">
+                                            
+                                            <!-- Filter badge -->
+                                            <div class="filter-badge">
+                                                {{ item.filter_name }}
+                                            </div>
+                                            
+                                            <!-- Success icon overlay -->
+                                            <div class="success-overlay">
+                                                <i class="fas fa-check-circle"></i>
+                                            </div>
+                                            
+                                            <!-- Image details hover overlay -->
+                                            <div class="image-details">
+                                                <div class="hover-controls">
+                                                    <a href="{{ item.processed_url }}" class="control-button view-button" target="_blank" title="View full size">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'processing:download' item.id %}" class="control-button download-button" title="Download image">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
+                                                    <a href="{% url 'processing:result' item.id %}" class="control-button details-button" title="See details">
+                                                        <i class="fas fa-info-circle"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="gallery-item-info">
+                                            <h6 class="image-title text-truncate" title="{{ item.original_filename }}">
+                                                {{ item.original_filename }}
+                                            </h6>
+                                            <p class="created-date small text-muted">
+                                                <i class="far fa-calendar-alt me-1"></i> {{ item.created_at|date:"M d, Y" }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if images.has_other_pages %}
+                            <div class="pagination-container mt-5" data-aos="fade-up">
+                                <nav aria-label="Gallery pagination">
+                                    <ul class="pagination justify-content-center">
+                                        {% if images.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ images.previous_page_number }}" aria-label="Previous">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <a class="page-link" href="#" aria-label="Previous">
+                                                    <span aria-hidden="true">&laquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        
+                                        {% for i in images.paginator.page_range %}
+                                            {% if images.number == i %}
+                                                <li class="page-item active">
+                                                    <a class="page-link" href="#">{{ i }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        {% if images.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ images.next_page_number }}" aria-label="Next">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <a class="page-link" href="#" aria-label="Next">
+                                                    <span aria-hidden="true">&raquo;</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-gallery text-center py-5" data-aos="fade-up">
+                            <div class="empty-icon mb-3">
+                                <i class="fas fa-images"></i>
+                            </div>
+                            <h3 class="h4 mb-3">No Images Yet</h3>
+                            <p class="text-muted mb-4">Your gallery is empty. Start by processing your first image!</p>
+                            <a href="{% url 'processing:index' %}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i>Process an Image
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Upload More CTA Section -->
+            {% if gallery_items %}
+                <div class="text-center mt-4" data-aos="fade-up" data-aos-delay="400">
+                    <a href="{% url 'processing:index' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus-circle me-2"></i>Process More Images
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    /* Gallery specific styles */
+    .text-gradient {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    .gallery-item {
+        border-radius: var(--border-radius-md);
+        overflow: hidden;
+        background-color: white;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--transition-normal);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .gallery-item:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .gallery-image-container {
+        position: relative;
+        overflow: hidden;
+        padding-bottom: 75%; /* 4:3 aspect ratio */
+        background-color: #f1f5f9;
+    }
+    
+    .gallery-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform var(--transition-normal);
+    }
+    
+    .gallery-item:hover .gallery-image {
+        transform: scale(1.05);
+    }
+    
+    .gallery-item-info {
+        padding: 1rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .image-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        font-size: 0.95rem;
+    }
+    
+    .created-date {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+    
+    /* Filter badge */
+    .filter-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
+        z-index: 2;
+    }
+    
+    /* Success icon overlay */
+    .success-overlay {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--success-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.85rem;
+        box-shadow: var(--shadow-sm);
+        z-index: 2;
+    }
+    
+    /* Image hover details */
+    .image-details {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(30, 41, 59, 0.7);
+        opacity: 0;
+        transition: opacity var(--transition-normal);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3;
+    }
+    
+    .gallery-item:hover .image-details {
+        opacity: 1;
+    }
+    
+    .hover-controls {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .control-button {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-color);
+        text-decoration: none;
+        box-shadow: var(--shadow-md);
+        transition: all var(--transition-fast);
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    
+    .gallery-item:hover .control-button {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    .view-button {
+        transition-delay: 0.05s;
+    }
+    
+    .download-button {
+        transition-delay: 0.1s;
+    }
+    
+    .details-button {
+        transition-delay: 0.15s;
+    }
+    
+    .control-button:hover {
+        transform: scale(1.1) !important;
+        color: var(--primary-color);
+    }
+    
+    /* Empty gallery state */
+    .empty-gallery {
+        padding: 3rem 1rem;
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--gray-color);
+        opacity: 0.5;
+    }
+    
+    /* Pagination styling */
+    .pagination .page-item .page-link {
+        color: var(--dark-color);
+        border: none;
+        margin: 0 0.25rem;
+        border-radius: var(--border-radius-md);
+        transition: all var(--transition-fast);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-image: var(--gradient-primary);
+        color: white;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .pagination .page-item .page-link:hover:not(.disabled) {
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+{% endblock %}
