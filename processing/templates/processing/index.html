@@ -1,0 +1,225 @@
+{% extends 'processing/base.html' %}
+
+{% block title %}Upload Image{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Page Title with Animation -->
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h1 class="display-4 fw-bold text-gradient mb-2">Image Processor</h1>
+                <p class="lead">Transform your images with powerful filters</p>
+            </div>
+            
+            <!-- Main Card -->
+            <div class="card shadow-lg mb-5" data-aos="zoom-in" data-aos-delay="200">
+                <div class="card-header bg-transparent border-0">
+                    <h2 class="h3 mb-0 p-2"><i class="fas fa-wand-magic-sparkles me-2 text-primary"></i>Create Amazing Effects</h2>
+                </div>
+                <div class="card-body p-0">
+                    <div class="row g-0">
+                        <!-- Features Panel -->
+                        <div class="col-lg-6">
+                            <div class="features-panel h-100">
+                                <h2 class="h4 mb-4"><i class="fas fa-star me-2"></i>Professional Filters</h2>
+                                <p class="mb-4">Transform your photos with our professional-grade image filters. Perfect for social media, personal projects, or creative expression!</p>
+                                
+                                <div class="filter-examples">
+                                    <h3 class="h5 mb-3">Available Effects:</h3>
+                                    <div class="row g-3">
+                                        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="100">
+                                            <div class="filter-item">
+                                                <i class="fas fa-adjust"></i>
+                                                <span>Grayscale</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="150">
+                                            <div class="filter-item">
+                                                <i class="fas fa-sun"></i>
+                                                <span>Sepia</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="200">
+                                            <div class="filter-item">
+                                                <i class="fas fa-th-large"></i>
+                                                <span>Poster</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="250">
+                                            <div class="filter-item">
+                                                <i class="fas fa-water"></i>
+                                                <span>Blur</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="300">
+                                            <div class="filter-item">
+                                                <i class="fas fa-border-none"></i>
+                                                <span>Edge</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-4" data-aos="fade-up" data-aos-delay="350">
+                                            <div class="filter-item">
+                                                <i class="fas fa-radiation"></i>
+                                                <span>Solar</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload Panel -->
+                        <div class="col-lg-6">
+                            <div class="upload-panel h-100">
+                                <h2 class="h4 mb-4"><i class="fas fa-cloud-arrow-up me-2"></i>Upload Your Image</h2>
+                                
+                                <form method="post" action="{% url 'processing:process_image' %}" enctype="multipart/form-data" id="uploadForm" class="needs-validation" novalidate>
+                                    {% csrf_token %}
+                                    
+                                    {% if form.non_field_errors %}
+                                    <div class="alert alert-danger" role="alert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        {% for error in form.non_field_errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="mb-4">
+                                        <label for="{{ form.image.id_for_label }}" class="form-label fw-semibold">
+                                            <i class="fas fa-image me-2"></i>Select an image
+                                        </label>
+                                        <div class="custom-file-upload">
+                                            {{ form.image }}
+                                            {% if form.image.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                <i class="fas fa-exclamation-circle me-1"></i>
+                                                {% for error in form.image.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div id="imagePreviewContainer" class="mt-3 d-none">
+                                            <img id="imagePreview" class="img-fluid rounded" src="#" alt="Image Preview">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">
+                                            <i class="fas fa-filter me-2"></i>Choose a filter
+                                        </label>
+                                        <div class="filter-selection">
+                                            {% for value, label in form.filter_type.field.choices %}
+                                            <div class="form-check filter-option">
+                                                <input class="form-check-input" type="radio" name="{{ form.filter_type.name }}" 
+                                                       id="filter_{{ value }}" value="{{ value }}" 
+                                                       {% if forloop.first %}checked{% endif %}>
+                                                <label class="form-check-label" for="filter_{{ value }}">
+                                                    <div class="filter-icon">
+                                                        {% if value == 'gray' %}
+                                                            <i class="fas fa-adjust"></i>
+                                                        {% elif value == 'sepia' %}
+                                                            <i class="fas fa-sun"></i>
+                                                        {% elif value == 'poster' %}
+                                                            <i class="fas fa-th-large"></i>
+                                                        {% elif value == 'blur' %}
+                                                            <i class="fas fa-water"></i>
+                                                        {% elif value == 'edge' %}
+                                                            <i class="fas fa-border-none"></i>
+                                                        {% elif value == 'solar' %}
+                                                            <i class="fas fa-radiation"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <span>{{ label }}</span>
+                                                </label>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% if form.filter_type.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            <i class="fas fa-exclamation-circle me-1"></i>
+                                            {% for error in form.filter_type.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-magic me-2"></i>Process Image
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Features Section -->
+            <div class="row g-4 mt-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-bolt fs-1 text-primary"></i>
+                            </div>
+                            <h3 class="h5 mb-3">Fast Processing</h3>
+                            <p class="mb-0 text-muted">Transform your images in seconds with our optimized processing engine.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-medal fs-1 text-primary"></i>
+                            </div>
+                            <h3 class="h5 mb-3">High Quality</h3>
+                            <p class="mb-0 text-muted">Our filters preserve image quality while creating stunning effects.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-download fs-1 text-primary"></i>
+                            </div>
+                            <h3 class="h5 mb-3">Easy Download</h3>
+                            <p class="mb-0 text-muted">Download your processed images with a single click for easy sharing.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .text-gradient {
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    .feature-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: 1rem;
+        border-radius: 50%;
+        background: linear-gradient(rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.2));
+    }
+</style>
+{% endblock %}
+{% endblock %}
